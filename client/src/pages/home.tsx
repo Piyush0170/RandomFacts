@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FactDisplay } from "@/components/FactDisplay";
 import { SearchBox } from "@/components/SearchBox";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useToast } from "@/hooks/use-toast";
 
 const defaultFacts = [
   "The Great Wall of China is not visible from space with the naked eye.",
@@ -13,6 +14,8 @@ export default function Home() {
   const [facts, setFacts] = useState(defaultFacts);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [searchResult, setSearchResult] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const { toast } = useToast();
 
   const handleNext = () => {
     setCurrentIndex((prev) => (prev + 1) % facts.length);
@@ -28,23 +31,41 @@ export default function Home() {
     setSearchResult(result);
   };
 
+  const handleFavorite = (fact: string) => {
+    const isFavorite = favorites.includes(fact);
+    if (isFavorite) {
+      setFavorites(favorites.filter((f) => f !== fact));
+      toast({
+        title: "Removed from favorites",
+        description: "The fact has been removed from your favorites",
+      });
+    } else {
+      setFavorites([...favorites, fact]);
+      toast({
+        title: "Added to favorites",
+        description: "The fact has been added to your favorites",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="container mx-auto space-y-8">
         <div className="flex justify-end">
           <ThemeToggle />
         </div>
-        
+
         <div className="space-y-8">
           <h1 className="text-4xl font-bold text-center">Random Facts</h1>
-          
+
           <SearchBox onSearch={handleSearch} />
-          
+
           <FactDisplay
             fact={searchResult || facts[currentIndex]}
             onNext={handleNext}
             onPrev={handlePrev}
             isPaused={!!searchResult}
+            onFavorite={handleFavorite}
           />
         </div>
       </div>

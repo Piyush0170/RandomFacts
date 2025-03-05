@@ -13,47 +13,48 @@ export function SearchBox({ onSearch }: SearchBoxProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  function extractFact(text: string): string {
-    // Get first sentence or short paragraph
-    const firstSentence = text.split(/[.!?](?:\s|$)/)[0];
-
-    // Remove parenthetical references
-    const cleanSentence = firstSentence.replace(/\([^)]*\)/g, "").trim();
-
-    // Limit length and add ellipsis if needed
-    return cleanSentence.length > 150 
-      ? cleanSentence.substring(0, 150) + "..."
-      : cleanSentence;
-  }
-
   async function handleSearch() {
     if (!query.trim()) return;
 
     setLoading(true);
     try {
-      const response = await fetch(
-        `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro=1&explaintext=1&titles=${encodeURIComponent(query)}&origin=*`
+      // First search for pages related to the query
+      const searchResponse = await fetch(
+        `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`
       );
 
-      const data = await response.json();
-      const pages = data.query.pages;
-      const pageId = Object.keys(pages)[0];
-      const extract = pages[pageId].extract;
+      const searchData = await searchResponse.json();
+      if (!searchData.query.search.length) {
+        throw new Error("No results found");
+      }
+
+      // Get a random page from the search results
+      const randomIndex = Math.floor(Math.random() * Math.min(searchData.query.search.length, 5));
+      const pageId = searchData.query.search[randomIndex].pageid;
+
+      // Fetch the actual page content
+      const contentResponse = await fetch(
+        `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exsentences=2&exlimit=1&explaintext=1&pageids=${pageId}&format=json&origin=*`
+      );
+
+      const contentData = await contentResponse.json();
+      const extract = contentData.query.pages[pageId].extract;
 
       if (extract) {
-        const fact = extractFact(extract);
-        onSearch(fact);
+        // Clean up the fact
+        const fact = extract
+          .replace(/\([^)]*\)/g, '') // Remove parenthetical references
+          .replace(/\s+/g, ' ') // Normalize whitespace
+          .trim();
+
+        onSearch(`Did you know? ${fact}`);
       } else {
-        toast({
-          title: "No results found",
-          description: "Try a different search term",
-          variant: "destructive",
-        });
+        throw new Error("No fact found");
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to fetch from Wikipedia",
+        description: error instanceof Error ? error.message : "Failed to fetch fact from Wikipedia",
         variant: "destructive",
       });
     } finally {
@@ -64,7 +65,7 @@ export function SearchBox({ onSearch }: SearchBoxProps) {
   return (
     <div className="flex gap-2 w-full max-w-2xl mx-auto">
       <Input
-        placeholder="Search Wikipedia..."
+        placeholder="Search for interesting facts..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && handleSearch()}
