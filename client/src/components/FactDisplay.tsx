@@ -21,7 +21,7 @@ export function FactDisplay({
   onFavorite,
   isFavorited = false
 }: FactDisplayProps) {
-  const [progress, setProgress] = useState(100);
+  const [progress, setProgress] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const duration = 10000; // 10 seconds
   const interval = 100;
@@ -31,11 +31,11 @@ export function FactDisplay({
 
     const timer = setInterval(() => {
       setProgress((prev) => {
-        if (prev <= 0) {
+        if (prev >= 100) {
           onNext();
-          return 100;
+          return 0;
         }
-        return prev - (interval / duration * 100);
+        return prev + (interval / duration * 100);
       });
     }, interval);
 
@@ -65,7 +65,9 @@ export function FactDisplay({
               <ChevronLeft className="h-4 w-4" />
             </Button>
 
-            <Progress value={progress} className="flex-1" />
+            <div className="flex-1 h-1">
+              <Progress value={progress} className="h-1" />
+            </div>
 
             <Button
               variant="outline"

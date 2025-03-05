@@ -13,8 +13,33 @@ export function SearchBox({ onSearch }: SearchBoxProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  const badWords = ["curse", "swear", "inappropriate"]; // Add more words as needed
+
+  const containsBadWords = (text: string): boolean => {
+    return badWords.some(word => text.toLowerCase().includes(word));
+  };
+
   async function handleSearch() {
-    if (!query.trim()) return;
+    const cleanQuery = query.trim();
+    if (!cleanQuery) return;
+
+    if (cleanQuery.split(' ').length > 3) {
+      toast({
+        title: "Too many words",
+        description: "Please enter a single word or short phrase",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (containsBadWords(cleanQuery)) {
+      toast({
+        title: "Inappropriate content",
+        description: "Please keep your search family-friendly",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setLoading(true);
     try {
@@ -63,17 +88,22 @@ export function SearchBox({ onSearch }: SearchBoxProps) {
   }
 
   return (
-    <div className="flex gap-2 w-full max-w-2xl mx-auto">
-      <Input
-        placeholder="Search for interesting facts..."
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-      />
-      <Button onClick={handleSearch} disabled={loading}>
-        <Search className="h-4 w-4 mr-2" />
-        Search
-      </Button>
+    <div className="space-y-2 w-full max-w-2xl mx-auto">
+      <h2 className="text-lg text-center text-muted-foreground">
+        Curious? Enter a Word and Learn Something New!
+      </h2>
+      <div className="flex gap-2">
+        <Input
+          placeholder="Enter a word (not sentences)..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+        />
+        <Button onClick={handleSearch} disabled={loading}>
+          <Search className="h-4 w-4 mr-2" />
+          Generate
+        </Button>
+      </div>
     </div>
   );
 }
