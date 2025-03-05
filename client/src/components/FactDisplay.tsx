@@ -10,6 +10,7 @@ interface FactDisplayProps {
   onPrev: () => void;
   isPaused?: boolean;
   onFavorite?: (fact: string) => void;
+  isFavorited?: boolean;
 }
 
 export function FactDisplay({ 
@@ -17,11 +18,11 @@ export function FactDisplay({
   onNext, 
   onPrev, 
   isPaused = false,
-  onFavorite 
+  onFavorite,
+  isFavorited = false
 }: FactDisplayProps) {
   const [progress, setProgress] = useState(100);
   const [isHovered, setIsHovered] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
   const duration = 10000; // 10 seconds
   const interval = 100;
 
@@ -42,7 +43,6 @@ export function FactDisplay({
   }, [isPaused, isHovered, onNext]);
 
   const handleFavorite = () => {
-    setIsFavorite(!isFavorite);
     onFavorite?.(fact);
   };
 
@@ -71,9 +71,9 @@ export function FactDisplay({
               variant="outline"
               size="icon"
               onClick={handleFavorite}
-              className={isFavorite ? "text-red-500" : ""}
+              className={isFavorited ? "text-red-500" : ""}
             >
-              <Heart className="h-4 w-4" fill={isFavorite ? "currentColor" : "none"} />
+              <Heart className="h-4 w-4" fill={isFavorited ? "currentColor" : "none"} />
             </Button>
 
             <Button
