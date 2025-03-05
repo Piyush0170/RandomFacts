@@ -13,22 +13,36 @@ export function SearchBox({ onSearch }: SearchBoxProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  function extractFact(text: string): string {
+    // Get first sentence or short paragraph
+    const firstSentence = text.split(/[.!?](?:\s|$)/)[0];
+
+    // Remove parenthetical references
+    const cleanSentence = firstSentence.replace(/\([^)]*\)/g, "").trim();
+
+    // Limit length and add ellipsis if needed
+    return cleanSentence.length > 150 
+      ? cleanSentence.substring(0, 150) + "..."
+      : cleanSentence;
+  }
+
   async function handleSearch() {
     if (!query.trim()) return;
-    
+
     setLoading(true);
     try {
       const response = await fetch(
         `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro=1&explaintext=1&titles=${encodeURIComponent(query)}&origin=*`
       );
-      
+
       const data = await response.json();
       const pages = data.query.pages;
       const pageId = Object.keys(pages)[0];
       const extract = pages[pageId].extract;
-      
+
       if (extract) {
-        onSearch(extract);
+        const fact = extractFact(extract);
+        onSearch(fact);
       } else {
         toast({
           title: "No results found",
