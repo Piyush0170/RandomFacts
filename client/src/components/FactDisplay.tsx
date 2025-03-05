@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
 
 interface FactDisplayProps {
   fact: string;
+  category: string;
   onNext: () => void;
   onPrev: () => void;
   isPaused?: boolean;
@@ -15,6 +16,7 @@ interface FactDisplayProps {
 
 export function FactDisplay({ 
   fact, 
+  category,
   onNext, 
   onPrev, 
   isPaused = false,
@@ -54,6 +56,9 @@ export function FactDisplay({
     >
       <CardContent className="p-6">
         <div className="space-y-4">
+          <div className="text-sm text-muted-foreground text-center">
+            {category}
+          </div>
           <p className="text-lg text-center">{fact}</p>
 
           <div className="flex justify-between items-center gap-4">
