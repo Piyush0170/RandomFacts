@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, Share2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface FactDisplayProps {
   fact: string;
@@ -27,6 +28,7 @@ export function FactDisplay({
   const [isHovered, setIsHovered] = useState(false);
   const duration = 10000; // 10 seconds
   const interval = 100;
+  const { toast } = useToast();
 
   useEffect(() => {
     if (isPaused || isHovered) return;
@@ -46,6 +48,40 @@ export function FactDisplay({
 
   const handleFavorite = () => {
     onFavorite?.(fact);
+  };
+
+  const handleShare = async () => {
+    const shareText = `${fact} - ${category}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          text: shareText
+        });
+      } catch (err) {
+        if (err instanceof Error && err.name !== "AbortError") {
+          handleCopyToClipboard();
+        }
+      }
+    } else {
+      handleCopyToClipboard();
+    }
+  };
+
+  const handleCopyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(`${fact} - ${category}`);
+      toast({
+        title: "Copied to clipboard",
+        description: "You can now share this fact with others!",
+      });
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "Please try selecting and copying the text manually",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -73,6 +109,14 @@ export function FactDisplay({
             <div className="flex-1 h-1">
               <Progress value={progress} className="h-1" />
             </div>
+
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleShare}
+            >
+              <Share2 className="h-4 w-4" />
+            </Button>
 
             <Button
               variant="outline"

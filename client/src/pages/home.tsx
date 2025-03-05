@@ -79,16 +79,8 @@ export default function Home() {
     const isFavorite = favorites.includes(fact);
     if (isFavorite) {
       setFavorites(favorites.filter((f) => f !== fact));
-      toast({
-        title: "Removed from favorites",
-        description: "The fact has been removed from your favorites",
-      });
     } else {
       setFavorites([...favorites, fact]);
-      toast({
-        title: "Added to favorites",
-        description: "The fact has been added to your favorites",
-      });
     }
   };
 
@@ -99,7 +91,7 @@ export default function Home() {
     <div className="min-h-screen bg-background p-8">
       <div className="container mx-auto space-y-8">
         <div className="flex justify-between items-center">
-          <Button 
+          <Button
             variant="outline"
             onClick={() => setShowFavorites(!showFavorites)}
             className="flex items-center gap-2"
