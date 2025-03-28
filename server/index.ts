@@ -58,12 +58,17 @@ app.use((req, res, next) => {
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client
-  const port = 5000;
+  // Define port first
+  const port = Number(process.env.PORT) || 5000;  // Use environment variable with fallback
+
   server.listen({
     port,
     host: "0.0.0.0",
-    reusePort: true,
+    // Removed reusePort as it's usually not needed in cloud environments
   }, () => {
-    log(`serving on port ${port}`);
+    log(`Server running on port ${port}`);
+  }).on('error', (err) => {
+    log(`Server failed to start: ${err.message}`);
+    process.exit(1);  // Exit with error code
   });
 })();
